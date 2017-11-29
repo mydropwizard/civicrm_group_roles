@@ -1,0 +1,12 @@
+{
+    "name": "mydropwizard/civicrm_group_roles",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Will Long",
+            "email": "will.long@mydropwizard.com"
+        }
+    ],
+    "require": {}
+}
