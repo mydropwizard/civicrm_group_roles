@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * A simple module to synchronize Drupal Roles with Specified CiviCRM Groups.
+ */
+
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_install().
+ */
+function civicrm_group_roles_install() {
+  module_set_weight('civicrm_group_roles', 101);
+  $link = Link::fromTextAndUrl(t('here'), Url::fromRoute('entity.civicrm_group_role_rule.add_form'));
+  $params = ['@link' => $link->toString()];
+  drupal_set_message(t('CiviGroup Roles Sync installed. You will need to specify sync rules @link.', $params));
+}

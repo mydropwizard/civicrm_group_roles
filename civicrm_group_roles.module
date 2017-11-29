@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * @file
+ * A simple module that adds a user to groups based on Role.
+ */
+
+use Drupal\civicrm_group_roles\Entity\CivicrmGroupRoleRule;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_user_insert().
+ *
+ * When a new user is created, add them to Civi groups depending on their
+ * assigned roles.
+ */
+function civicrm_group_roles_user_insert(UserInterface $account) {
+  \Drupal::service('civicrm_group_roles')->addGroupsOnCreate($account);
+}
+
+/**
+ * Implements hook_user_update().
+ *
+ * When a user is updated, add/remove them from Civi groups according to their
+ * roles.
+ */
+function civicrm_group_roles_user_update(UserInterface $account) {
+  \Drupal::service('civicrm_group_roles')->userAddGroups($account);
+}
+
+/**
+ * Implements hook_user_login().
+ *
+ * When a user logs in, update their roles depending on which Civi groups they
+ * are a member of.
+ */
+function civicrm_group_roles_user_login(UserInterface $account) {
+  \Drupal::service('civicrm_group_roles')->syncRoles($account);
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Adds submit callback to handle removing groups upon role removal.
+ */
+function civicrm_group_roles_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Applicable to other forms?
+  if ($form_id != 'user_form') {
+    return;
+  }
+
+  /** @var \Drupal\user\UserInterface $user */
+  $user = $form_state->getFormObject()->getEntity();
+  if ($user->isAnonymous()) {
+    return;
+  }
+
+  // Make sure there is a civicrm record.
+  $contact_id = \Drupal::service('civicrm_group_roles')->getContactId($user->id());
+  if (!$contact_id) {
+    return;
+  }
+
+  array_unshift($form['actions']['submit']['#submit'], 'civicrm_group_rules_user_form_submit');
+}
+
+/**
+ * Form submit handler.
+ *
+ * Remove Groups when Drupal user form is saved, if a role is removed in Drupal.
+ */
+function civicrm_group_rules_user_form_submit($form, FormStateInterface $form_state) {
+  /** @var \Drupal\user\UserInterface $user */
+  $user = $form_state->getFormObject()->getEntity();
+  $removed_roles = array_diff($user->getRoles(), $form_state->getValue('roles'));
+
+  if ($removed_roles) {
+    \Drupal::service('civicrm_group_roles')->userRemoveGroups($user, $removed_roles);
+  }
+}
+
+/**
+ * Implements hook_civicrm_post().
+ *
+ * This provides sync from CiviCRM -> Drupal.
+ */
+function civicrm_group_roles_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  if ($objectName != 'GroupContact') {
+    // We only care about Group contact operations, so bail on anything else.
+    return;
+  }
+
+  /** @var \Drupal\civicrm_group_roles\CivicrmGroupRoles $groupRoles */
+  $groupRoles = \Drupal::service('civicrm_group_roles');
+
+  if (!$group = $groupRoles->getGroup($objectId)) {
+    return;
+  }
+
+  $contactId = reset($objectRef);
+  if (!$user = $groupRoles->getContactUser($contactId)) {
+    return;
+  }
+
+  $rules = CivicrmGroupRoleRule::loadByGroup($group['id']);
+  $userRoles = $user->getRoles();
+
+  foreach ($rules as $rule) {
+    switch ($op) {
+      case 'create':
+        $groupRoles->userAddRole($user, $rule);
+        break;
+
+      case 'edit':
+        // If user is in group, add role. Otherwise remove role.
+        $userGroupIds = $groupRoles->getContactGroupIds($contactId);
+        if (in_array($rule->group, $userGroupIds)) {
+          $groupRoles->userAddRole($user, $rule);
+        }
+        else {
+          $groupRoles->userRemoveRole($user, $rule);
+        }
+        break;
+
+      case 'delete':
+        $groupRoles->userRemoveRole($user, $rule);
+        break;
+    }
+  }
+
+  // If the roles have changed, save the user.
+  if ($user->getRoles() != $userRoles) {
+    $user->save();
+  }
+}

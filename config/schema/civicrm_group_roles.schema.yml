@@ -1,0 +1,24 @@
+civicrm_group_roles.settings:
+  type: config_entity
+  label: 'CiviGroup Roles Sync settings'
+  mapping:
+    debugging:
+      type: boolean
+      label: 'Debugging'
+
+civicrm_group_roles.civicrm_group_role_rule.*:
+  type: config_entity
+  label: 'CiviCRM group role rule config'
+  mapping:
+    label:
+      type: string
+      label: 'Label'
+    id:
+      type: string
+      label: 'ID'
+    group:
+      type: integer
+      label: 'Group'
+    role:
+      type: string
+      label: 'Role'

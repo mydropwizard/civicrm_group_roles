@@ -1,0 +1,14 @@
+civicrm_group_roles.list:
+  route_name: entity.civicrm_group_role_rule.collection
+  title: 'List'
+  base_route: entity.civicrm_group_role_rule.collection
+
+civicrm_group_roles.manual_sync:
+  route_name: civicrm_group_roles.manual_sync
+  title: 'Manually synchronize'
+  base_route: entity.civicrm_group_role_rule.collection
+
+civicrm_group_roles.settings:
+  route_name: civicrm_group_roles.settings
+  title: 'Settings'
+  base_route: entity.civicrm_group_role_rule.collection
