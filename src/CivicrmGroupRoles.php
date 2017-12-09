@@ -81,7 +81,7 @@ class CivicrmGroupRoles {
    *   The user account.
    */
   public function userAddGroups(UserInterface $account) {
-    $roles = array_diff_key($account->getRoles(), ['anonymous', 'authenticated']);
+    $roles = array_diff($account->getRoles(), ['anonymous', 'authenticated']);
     if (!$roles) {
       return;
     }
@@ -381,6 +381,7 @@ class CivicrmGroupRoles {
     ];
     CRM_Contact_BAO_SubscriptionHistory::create($historyParams);
     $groupContact->status = 'Added';
+    $groupContact->save();
     return TRUE;
   }
 
