@@ -19,7 +19,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",
+ *       "html" = "Drupal\civicrm_group_roles\CivicrmGroupRoleRuleHtmlRouteProvider",
  *     },
  *   },
  *   config_prefix = "civicrm_group_role_rule",
