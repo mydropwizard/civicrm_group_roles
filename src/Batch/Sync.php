@@ -50,11 +50,11 @@ class Sync {
    *
    * @param array $uids
    *   User IDs to process.
-   * @param array $context
+   * @param mixed $context
    *   Batch API context data.
    */
-  public function process(array $uids, array &$context) {
-    if (!isset($context['sandbox']['progress'])) {
+  public function process(array $uids, &$context) {
+    if (!isset($context['sandbox']['uids'])) {
       $context['sandbox']['uids'] = $uids;
       $context['sandbox']['max'] = count($uids);
       $context['results']['processed'] = 0;
@@ -67,7 +67,7 @@ class Sync {
     $this->getCivicrmGroupRoles()->syncRoles($account);
     $context['results']['processed']++;
 
-    if ($context['sandbox']['uids'] > 0) {
+    if (count($context['sandbox']['uids']) > 0) {
       $context['finished'] = 1 - (count($context['sandbox']['uids']) / $context['sandbox']['max']);
     }
   }
