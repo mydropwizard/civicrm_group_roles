@@ -116,7 +116,11 @@ class CivicrmGroupRoleRuleForm extends EntityForm {
     $groups = [];
 
     $this->civicrm->initialize();
-    $result = civicrm_api3('Group', 'get', ['is_active' => 1]);
+    $params = [
+      'is_active' => 1,
+      'options' => ['limit' => 0],
+    ];
+    $result = civicrm_api3('Group', 'get', $params);
 
     if (empty($result['values'])) {
       return $groups;
