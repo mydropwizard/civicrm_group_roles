@@ -310,10 +310,30 @@ class CivicrmGroupRoles {
    */
   public function getContactGroupIds($contactId) {
     $this->civicrm->initialize();
-    $result = civicrm_api3('GroupContact', 'get', ['contact_id' => $contactId]);
-    return array_map(function ($item) {
-      return $item['group_id'];
-    }, $result['values']);
+
+    // Get groups applicable to the rules.
+    $ruleGroups = array_map(function ($rule) {
+      return $rule->group;
+    }, CivicrmGroupRoleRule::loadMultiple());
+
+    $groups = [];
+
+    // Check each group to see if the contact is a member. This is necessary for
+    // the case of "smart groups" which are not able to be queried via the
+    // GroupContact API.
+    foreach ($ruleGroups as $group_id) {
+      $params = [
+        'filter.group_id' => $group_id,
+        'id' => $contactId,
+        'version'  => 3,
+      ];
+      $result = civicrm_api3('contact', 'get', $params);
+      if ($result['count'] > 0) {
+        $groups[] = $group_id;
+      }
+    }
+
+    return $groups;
   }
 
   /**
