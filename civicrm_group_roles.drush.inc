@@ -62,6 +62,7 @@ function drush_civicrm_group_roles_civicrm_group_role_sync() {
     return;
   }
 
+  drush_log(dt('Syncing CiviGroup roles.'), 'ok');
   /** @var \Drupal\civicrm_group_roles\Batch\Sync $sync */
   $sync = \Drupal::service('civicrm_group_roles.batch.sync');
   $batch = $sync->getBatch();
