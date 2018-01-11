@@ -67,7 +67,7 @@ class CivicrmGroupRoles {
     }
 
     /** @var \Drupal\civicrm_group_roles\Entity\CivicrmGroupRoleRule[] $rules */
-    $rules = CivicrmGroupRoleRule::loadByRoles(array_keys($account->getRoles()));
+    $rules = CivicrmGroupRoleRule::loadByRoles($account->getRoles());
 
     foreach ($rules as $rule) {
       $this->addGroupContact($rule->group, $contactId);
